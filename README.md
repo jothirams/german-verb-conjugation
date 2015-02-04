@@ -8,5 +8,5 @@ Alfred 2 Workflow for viewing the conjugation of German verbs through @ www.verb
 
 You may have to download the following go libraries into your src folder
 
-https://github.com/golang/text
-https://github.com/jothirams/go-alfred
+- https://github.com/golang/text
+- https://github.com/jothirams/go-alfred
