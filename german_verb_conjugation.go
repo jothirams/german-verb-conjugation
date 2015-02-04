@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/jothirams/go-alfred"
+	"golang.org/x/text/unicode/norm"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -18,17 +20,28 @@ func main() {
 
 	// create a new alfred workflow response
 	response := alfred.NewResponse()
-	verbs := getVerbList(queryTerm)
 
-	for _, verb := range verbs {
+	// Normalize the queryTerm - because über comes inside as u¨ber
+	// Refer: http://alfredworkflow.readthedocs.org/en/latest/user-manual/text-encoding.html
+	// http://blog.golang.org/normalization
+	verbs, err := getVerbList(norm.NFC.String(queryTerm))
 
-		// it matched so add a new response item
+	if err != nil {
 		response.AddItem(&alfred.AlfredResponseItem{
-			Valid: true,
-			Uid:   verb.URL,
-			Title: verb.Name,
-			Arg:   verb.URL,
+			Valid: false,
+			Title: err.Error(),
 		})
+	} else {
+		for _, verb := range verbs {
+
+			// it matched so add a new response item
+			response.AddItem(&alfred.AlfredResponseItem{
+				Valid: true,
+				Uid:   verb.URL,
+				Title: verb.Name,
+				Arg:   verb.URL,
+			})
+		}
 	}
 
 	// finally print the resulting Alfred Workflow XML
@@ -42,9 +55,10 @@ type VerbList struct {
 
 // Gets the verb list from verbformen.de
 // And returns with the (constructed) URL and Name
-func getVerbList(queryTerm string) []VerbList {
+func getVerbList(queryTerm string) ([]VerbList, error) {
 
-	resp, err := http.Get(fmt.Sprint("http://www.verbformen.de/eingabeliste.jsp?eingabe=", queryTerm))
+	// Encode URL with queryTerm
+	resp, err := http.Get(fmt.Sprint("http://www.verbformen.de/eingabeliste.jsp?eingabe=", url.QueryEscape(queryTerm)))
 	if err != nil {
 		panic(err)
 	}
@@ -53,6 +67,9 @@ func getVerbList(queryTerm string) []VerbList {
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	sbody := string(body)
+	if len(sbody) <= 0 {
+		return nil, fmt.Errorf("No matching verbs for \"%s\"", queryTerm)
+	}
 	verbs := make([]VerbList, 10, 10)
 
 	j := 0
@@ -67,5 +84,5 @@ func getVerbList(queryTerm string) []VerbList {
 		}
 	}
 
-	return verbs
+	return verbs, nil
 }
