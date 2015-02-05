@@ -2,7 +2,7 @@
 
 Alfred 2 Workflow for viewing the conjugation of German verbs through @ www.verbformen.de
 
-[Install workflow from here](https://github.com/jothirams/german-verb-conjugation/releases/download/v1.0/german-verb-conjugation.alfredworkflow)
+[Install workflow from here](https://github.com/jothirams/german-verb-conjugation/releases/download/v1.1/german-verb-conjugation.alfredworkflow)
 
 #### To work with workflow
 
