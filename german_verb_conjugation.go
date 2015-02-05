@@ -91,7 +91,7 @@ func getVerbList(queryTerm string) ([]VerbList, error) {
 	for _, s := range strings.Split(sbody, ";") {
 		if len(s) > 0 {
 			verbs[j].Name = s
-			urlQueryTerm := regExp.ReplaceAllStringFunc(queryTerm, replaceUmlauts)
+			urlQueryTerm := regExp.ReplaceAllStringFunc(s, replaceUmlauts)
 			verbs[j].URL = fmt.Sprintf("http://www.verbformen.de/konjugation/%s.htm", urlQueryTerm)
 			j++
 			if j == 10 {
