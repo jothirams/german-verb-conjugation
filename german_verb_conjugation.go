@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -70,13 +71,28 @@ func getVerbList(queryTerm string) ([]VerbList, error) {
 	if len(sbody) <= 0 {
 		return nil, fmt.Errorf("No matching verbs for \"%s\"", queryTerm)
 	}
+
+	regExp := regexp.MustCompile("[äöüß]")
+
+	umlauts := map[string]string{
+		"ä": "a:",
+		"ö": "o:",
+		"ü": "u:",
+		"ß": "s:",
+	}
+
+	replaceUmlauts := func(str string) string {
+		return umlauts[str]
+	}
+
 	verbs := make([]VerbList, 10, 10)
 
 	j := 0
 	for _, s := range strings.Split(sbody, ";") {
 		if len(s) > 0 {
 			verbs[j].Name = s
-			verbs[j].URL = fmt.Sprintf("http://www.verbformen.de/konjugation/%s.htm", s)
+			urlQueryTerm := regExp.ReplaceAllStringFunc(queryTerm, replaceUmlauts)
+			verbs[j].URL = fmt.Sprintf("http://www.verbformen.de/konjugation/%s.htm", urlQueryTerm)
 			j++
 			if j == 10 {
 				break
