@@ -59,13 +59,17 @@ type VerbList struct {
 func getVerbList(queryTerm string) ([]VerbList, error) {
 
 	// Encode URL with queryTerm
-	resp, err := http.Get(fmt.Sprint("http://www.verbformen.de/eingabeliste.jsp?eingabe=", url.QueryEscape(queryTerm)))
+	resp, err := http.Get(fmt.Sprint("http://www.verblisten.de/eingabeliste.jsp?eingabe=", url.QueryEscape(queryTerm)))
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("Unable to reach verblisten.de. Failed with error: %s\"", err.Error())
 	}
 
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("The received response body is has returned error: %s\"", err.Error())
+	}
 
 	sbody := string(body)
 	if len(sbody) <= 0 {
@@ -89,6 +93,7 @@ func getVerbList(queryTerm string) ([]VerbList, error) {
 
 	j := 0
 	for _, s := range strings.Split(sbody, ";") {
+		s = strings.TrimSpace(s)
 		if len(s) > 0 {
 			verbs[j].Name = s
 			urlQueryTerm := regExp.ReplaceAllStringFunc(s, replaceUmlauts)
